@@ -18,12 +18,23 @@ const data = [
 
 const svg = d3.select('svg')
 
-const rect = svg
+// join data to rects
+const rects = svg
   .selectAll('rect')
   .data(data)
-  .attr('width', (d, i, n) => {
+
+// add attrs to reacts already to the DOM
+rects.attr('width', (d, i, n) => {
     // console.log(n[i])
     return d.width
   })
   .attr('height', (d) => d.height)
   .attr('fill', (d) => d.fill)
+
+// append the enter selection to the DOM
+rects.enter()
+  .append('rect')
+  .attr('width', (d, i, n) => d.width)
+  .attr('height', (d) => d.height)
+  .attr('fill', (d) => d.fill)
+  
