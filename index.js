@@ -1,23 +1,32 @@
 // select svg container first
-
 const svg = d3.select('svg')
 
-d3.json('planets.json').then((data) => {
-  const circs = svg.selectAll('circle').data(data)
+d3.json('menu.json').then((data) => {
 
-  // add attrs to circs already in DOM
-  circs
-    .attr('cy', 200)
-    .attr('cx', (d) => d.distance)
-    .attr('r', (d) => d.radius)
-    .attr('fill', (d) => d.fill)
+  const y = d3.scaleLinear()
+    .domain([0, 1000])
+    .range([0, 500])
 
-  //append the enter selection to the DOM
-  circs
+  console.log(y(400))
+  console.log(y(0))
+  console.log(y(900))
+
+  //join the data to rects
+  const rects = svg.selectAll('rect').data(data)
+
+  // add attrs to rects already in DOM
+  rects
+    .attr('width', 50)
+    .attr('height', (d) => y(d.orders))
+    .attr('fill', 'orange')
+    .attr('x', (d, i) => i * 70)
+
+  //append enter selection to the DOM
+  rects
     .enter()
-    .append('circle')
-    .attr('cy', 200)
-    .attr('cx', (d) => d.distance)
-    .attr('r', (d) => d.radius)
-    .attr('fill', (d) => d.fill)
+    .append('rect')
+    .attr('width', 50)
+    .attr('height', (d) => y(d.orders))
+    .attr('fill', 'orange')
+    .attr('x', (d, i) => i * 70)
 })
