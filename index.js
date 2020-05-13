@@ -4,18 +4,20 @@ const svg = d3.select('svg')
 d3.json('menu.json').then((data) => {
 
   const y = d3.scaleLinear()
-    .domain([0, 1000])
+    .domain([0, d3.max(data, d => d.orders)])
     .range([0, 500])
   
+  const min = d3.min(data, d => d.orders)
+  const max = d3.max(data, d => d.orders)
+  const extent = d3.extent(data, d => d.orders)
+
+  console.log(min, max, extent)
+
   const x = d3.scaleBand()
     .domain(data.map(item => item.name))
     .range([0, 500])
-    .paddinInner(0.2)
-    .paddinOuter(0.2)
-
-  console.log(x("veg curry"))
-  console.log(x("veg pasta"))
-  console.log(x.bandwidth())
+    .paddingInner(0.2)
+    .paddingOuter(0.2)
 
   //join the data to rects
   const rects = svg.selectAll('rect').data(data)
