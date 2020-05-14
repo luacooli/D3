@@ -88,6 +88,12 @@ db.collection('dishes')
     })
 
     update(data)
+
+    d3.interval(() => {
+      data[0].orders += 50;
+      // update(data)
+    }, 1000);
+    
   })
 
 
