@@ -10,49 +10,59 @@ const margin = { top: 20, right: 20, bottom: 100, left: 100 }
 const graphWidth = 600 - margin.left - margin.right
 const graphHeigth = 600 - margin.top - margin.bottom
 
-const graph = svg.append('g')
+const graph = svg
+  .append('g')
   .attr('width', graphWidth)
   .attr('height', graphHeigth)
   .attr('transform', `translate(${margin.left}, ${margin.top})`)
 
-const xAxisGroup = graph.append('g')
+const xAxisGroup = graph
+  .append('g')
   .attr('transform', `translate(0, ${graphHeigth})`)
 const yAxisGroup = graph.append('g')
 
-db.collection('dishes').get().then((res) => {
-  console.log(res)
-  var data = []
+// scales
+const y = d3.scaleLinear().range([graphHeigth, 0])
 
-  res.docs.forEach(doc => {
-    data.push(doc.data())
-  });
+const x = d3.scaleBand().range([0, 500]).paddingInner(0.2).paddingOuter(0.2)
 
-  console.log(data)
+// create the axes
+const xAxis = d3.axisBottom(x)
+const yAxis = d3
+  .axisLeft(y)
+  .ticks(3)
+  .tickFormat((d) => d + ' orders')
 
-  const y = d3
-    .scaleLinear()
-    .domain([0, d3.max(data, (d) => d.orders)])
-    .range([graphHeigth, 0])
+// update x axis text
+xAxisGroup
+  .selectAll('text')
+  .attr('transform', 'rotate(-40)')
+  .attr('text-anchor', 'end')
+  .attr('fill', 'orange')
 
-  const x = d3
-    .scaleBand()
-    .domain(data.map((item) => item.name))
-    .range([0, 500])
-    .paddingInner(0.2)
-    .paddingOuter(0.2)
+// update function
+const update = (data) => {
+  // updating scale domains
+  y.domain([0, d3.max(data, (d) => d.orders)])
+  x.domain(data.map((item) => item.name))
 
   //join the data to rects
   const rects = graph.selectAll('rect').data(data)
 
-  // add attrs to rects already in DOM
+  // remove exit selection
+  rects.exit().remove()
+
+  // update current shape in the DOM
+
+  //// add attrs to rects already in DOM
   rects
     .attr('width', x.bandwidth)
     .attr('height', (d) => graphHeigth - y(d.orders))
     .attr('fill', 'orange')
     .attr('x', (d) => x(d.name))
-    .attr('y', d => y(d.orders))
+    .attr('y', (d) => y(d.orders))
 
-  //append enter selection to the DOM
+  //// append enter selection to the DOM
   rects
     .enter()
     .append('rect')
@@ -60,19 +70,48 @@ db.collection('dishes').get().then((res) => {
     .attr('height', (d) => graphHeigth - y(d.orders))
     .attr('fill', 'orange')
     .attr('x', (d) => x(d.name))
-    .attr('y', d => y(d.orders))
-    
-    // create and call the axes
-    const xAxis = d3.axisBottom(x)
-    const yAxis = d3.axisLeft(y)
-      .ticks(3)
-      .tickFormat(d => d + ' orders')
-    
-    xAxisGroup.call(xAxis)
-    yAxisGroup.call(yAxis)
+    .attr('y', (d) => y(d.orders))
 
-    xAxisGroup.selectAll('text')
-      .attr('transform', 'rotate(-40)')
-      .attr('text-anchor', 'end')
-      .attr('fill', 'orange')
-})
+  //// call axes
+  xAxisGroup.call(xAxis)
+  yAxisGroup.call(yAxis)
+}
+
+// get data from firebase
+db.collection('dishes')
+  .get()
+  .then((res) => {
+    var data = []
+
+    res.docs.forEach((doc) => {
+      data.push(doc.data())
+    })
+
+    update(data)
+  })
+
+
+
+
+
+
+
+// const update = (data) => {
+//   // 1. update scales (domains) if they rely on our data
+//   y.domain([0, d3.max(data, (d) => d.orders)])
+
+//   // 2. join update data to elements
+//   const rects = graph.selectAll('react'.data(data))
+
+//   //3. remove unwanted (if any) shapes using the exit selection
+//   rects.exit().remove()
+
+//   // 4. update current shapes in the DOM
+//   rects.attr(...etc)
+
+//   // 5. append the enter selection to the DOM
+//   rects
+//     .enter()
+//     .append('rect')
+//     .attr(...etc)
+// }
