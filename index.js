@@ -24,7 +24,7 @@ const yAxisGroup = graph.append('g')
 // scales
 const y = d3.scaleLinear().range([graphHeigth, 0])
 
-const x = d3.scaleBand().range([0, 500]).paddingInner(0.2).paddingOuter(0.2)
+const x = d3.scaleBand().range([0, 500]).paddingInner(0.5).paddingOuter(0.2)
 
 // create the axes
 const xAxis = d3.axisBottom(x)
@@ -38,7 +38,7 @@ xAxisGroup
   .selectAll('text')
   .attr('transform', 'rotate(-40)')
   .attr('text-anchor', 'end')
-  .attr('fill', 'orange')
+  .attr('fill', '#00C59B')
 
 // update function
 const update = (data) => {
@@ -53,26 +53,28 @@ const update = (data) => {
   rects.exit().remove()
 
   // update current shape in the DOM
-
-  //// add attrs to rects already in DOM
   rects
     .attr('width', x.bandwidth)
-    .attr('height', (d) => graphHeigth - y(d.orders))
-    .attr('fill', 'orange')
+    .attr('fill', '#00C59B')
     .attr('x', (d) => x(d.name))
-    .attr('y', (d) => y(d.orders))
+    .transition().duration(500)
+      .attr('height', (d) => graphHeigth - y(d.orders))
+      .attr('y', (d) => y(d.orders))
 
-  //// append enter selection to the DOM
+  // append enter selection to the DOM
   rects
     .enter()
     .append('rect')
     .attr('width', x.bandwidth)
-    .attr('height', (d) => graphHeigth - y(d.orders))
-    .attr('fill', 'orange')
+    .attr('height', 0)
+    .attr('fill', '#00C59B')
     .attr('x', (d) => x(d.name))
-    .attr('y', (d) => y(d.orders))
+    .attr('y', (d) => graphHeigth)
+    .transition().duration(500)
+      .attr('y', (d) => y(d.orders))
+      .attr('height', (d) => graphHeigth - y(d.orders))
 
-  //// call axes
+  // call axes
   xAxisGroup.call(xAxis)
   yAxisGroup.call(yAxis)
 }
@@ -102,3 +104,12 @@ db.collection('dishes').onSnapshot((res) => {
 
   update(data)
 })
+
+
+// Starting coditions:
+// Y = graphHeight
+// Height = 0
+
+// Emding conditions:
+// Y = y(d.orders)
+// Height = graphHeight - y(d.orders)
