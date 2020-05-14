@@ -77,47 +77,28 @@ const update = (data) => {
   yAxisGroup.call(yAxis)
 }
 
+let data = []
+
 // get data from firebase
-db.collection('dishes')
-  .get()
-  .then((res) => {
-    var data = []
+db.collection('dishes').onSnapshot((res) => {
+  res.docChanges().forEach((change) => {
+    const doc = { ...change.doc.data(), id: change.doc.id }
 
-    res.docs.forEach((doc) => {
-      data.push(doc.data())
-    })
-
-    update(data)
-
-    d3.interval(() => {
-      data.pop()
-      update(data)
-    }, 3000);
-    
+    switch(change.type) {
+      case 'added': 
+        data.push(doc);
+        break;
+      case 'modified':
+        const index = data.findIndex(item => item.id == doc.id)
+        data[index] = doc;
+        break;
+      case 'removed':
+          data = data.filter(item => item.id !== doc.id)
+          break;
+        default:
+          break;
+    }
   })
 
-
-
-
-
-
-
-// const update = (data) => {
-//   // 1. update scales (domains) if they rely on our data
-//   y.domain([0, d3.max(data, (d) => d.orders)])
-
-//   // 2. join update data to elements
-//   const rects = graph.selectAll('react'.data(data))
-
-//   //3. remove unwanted (if any) shapes using the exit selection
-//   rects.exit().remove()
-
-//   // 4. update current shapes in the DOM
-//   rects.attr(...etc)
-
-//   // 5. append the enter selection to the DOM
-//   rects
-//     .enter()
-//     .append('rect')
-//     .attr(...etc)
-// }
+  update(data)
+})
