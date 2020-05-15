@@ -40,7 +40,7 @@ xAxisGroup
   .attr('text-anchor', 'end')
   .attr('fill', '#00C59B')
 
-const t = d3.transition().duration(500)
+const t = d3.transition().duration(1500)
 
 // update function
 const update = (data) => {
@@ -67,13 +67,13 @@ const update = (data) => {
   rects
     .enter()
     .append('rect')
-    .attr('width', x.bandwidth)
     .attr('height', 0)
     .attr('fill', '#00C59B')
     .attr('x', (d) => x(d.name))
     .attr('y', (d) => graphHeigth)
     .merge(rects)
     .transition(t)
+      .attrTween('width', widthTweens)
       .attr('y', (d) => y(d.orders))
       .attr('height', (d) => graphHeigth - y(d.orders))
 
@@ -109,10 +109,16 @@ db.collection('dishes').onSnapshot((res) => {
 })
 
 
-// Starting coditions:
-// Y = graphHeight
-// Height = 0
+// Tweens
 
-// Emding conditions:
-// Y = y(d.orders)
-// Height = graphHeight - y(d.orders)
+const widthTweens = d => {
+  //define interpolation
+  //d3.interpolate returns a function which we call 'i'
+  let i = d3.interpolate(0, x.bandwidth())
+
+  //return a function which takes in a time ticker 't'
+  return function(t) {
+    //return the value from passing the ticker into the interpolation
+    return i(t)
+  }
+}
